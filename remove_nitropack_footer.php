@@ -9,56 +9,32 @@ Author URI: https://joanmorales.com/
 */
 
 if (!defined('ABSPATH')) {
-    exit; // Evita el acceso directo.
+    exit; // Evitar acceso directo
 }
 
-// Agrega el script al footer para que se ejecute al final
-function forzar_display_none_script() {
+// Agregar el script al frontend
+function ocultar_nitropack_script() {
     ?>
     <script>
-    jQuery(document).ready(function(){
-        // Primera estrategia: buscar por template
-        const template = document.querySelector("template");
-        if (template) {
-            const previousElement = template.previousElementSibling;
-            if (previousElement && previousElement.tagName.toLowerCase() === "div") {
-                previousElement.style.display = "none";
-            }
-        }
-
-        // Segunda estrategia: buscar elementos específicos de Nitropack
-        function ocultarNitropack() {
-            // Buscar todos los templates
-            jQuery("template").each(function() {
-                // Ocultar el elemento anterior si es un div
-                let prev = jQuery(this).prev('div');
-                if(prev.length) {
-                    prev.css('display', 'none');
-                }
-                
-                // Intentar ocultar por ID
-                let templateId = jQuery(this).attr('id');
-                if(templateId) {
-                    jQuery("#" + templateId).css('display', 'none');
-                    jQuery("#" + templateId).next().css('display', 'none');
-                    jQuery("#" + templateId).next().next().css('display', 'none');
-                }
+        (function() {
+            document.addEventListener("DOMContentLoaded", function() {
+                setTimeout(function() {
+                    document.querySelectorAll("body > div").forEach(div => {
+                        try {
+                            if (div.shadowRoot) {
+                                const style = document.createElement("style");
+                                style.innerHTML = `div { display: none !important; }`;
+                                div.shadowRoot.appendChild(style);
+                            }
+                        } catch (e) {
+                            console.warn("No se pudo modificar el Shadow DOM");
+                        }
+                        div.style.display = "none";
+                    });
+                }, 2000);
             });
-
-            // Buscar elementos que contengan texto específico de Nitropack
-            jQuery("div").each(function() {
-                if(jQuery(this).text().toLowerCase().includes('nitropack')) {
-                    jQuery(this).css('display', 'none');
-                }
-            });
-        }
-
-        // Ejecutar múltiples veces para asegurar que se aplique
-        ocultarNitropack();
-        setTimeout(ocultarNitropack, 500);
-        setTimeout(ocultarNitropack, 1500);
-    });
+        })();
     </script>
     <?php
 }
-add_action('wp_footer', 'forzar_display_none_script', 999);
+add_action('wp_footer', 'ocultar_nitropack_script', 100);
